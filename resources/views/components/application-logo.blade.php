@@ -1,0 +1,1 @@
+<img src="{{ asset('sakinah_gallery/sakinah_collection_logos2.png') }}" style="width: 100px;" alt="">

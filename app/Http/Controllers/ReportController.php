@@ -10,11 +10,9 @@ use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\TransactionReportExport;
 use Barryvdh\DomPDF\Facade\PDF;
-use Illuminate\Support\Facades\Gate;
 
 class ReportController extends Controller
 {
-
     public function index()
     {
         $transactions = Transaction::with(['user', 'items.barang', 'items.jasa'])->paginate(10);
@@ -23,7 +21,6 @@ class ReportController extends Controller
         $jasas = Jasa::count();
         $totalRevenue = Transaction::where('status', 'completed')->sum('total_price');
         
-        // Data for chart (transactions per month)
         $chartData = Transaction::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, COUNT(*) as count, SUM(total_price) as revenue')
             ->where('status', 'completed')
             ->groupBy('month')
@@ -43,12 +40,7 @@ class ReportController extends Controller
     public function print()
     {
         $transactions = Transaction::with(['user', 'items.barang', 'items.jasa'])->get();
-        $users = User::count();
-        $barangs = Barang::count();
-        $jasas = Jasa::count();
-        $totalRevenue = Transaction::where('status', 'completed')->sum('total_price');
-
-        return view('admin.reports.print', compact('transactions', 'users', 'barangs', 'jasas', 'totalRevenue'));
+        return view('admin.reports.print', compact('transactions'));
     }
 
     public function exportExcel()
@@ -59,12 +51,7 @@ class ReportController extends Controller
     public function exportPDF()
     {
         $transactions = Transaction::with(['user', 'items.barang', 'items.jasa'])->get();
-        $users = User::count();
-        $barangs = Barang::count();
-        $jasas = Jasa::count();
-        $totalRevenue = Transaction::where('status', 'completed')->sum('total_price');
-
-        $pdf = PDF::loadView('admin.reports.pdf', compact('transactions', 'users', 'barangs', 'jasas', 'totalRevenue'));
+        $pdf = PDF::loadView('admin.reports.pdf', compact('transactions'));
         return $pdf->download('transaction_report_' . date('Y-m-d') . '.pdf');
     }
 }
